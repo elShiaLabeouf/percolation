@@ -72,7 +72,7 @@ public class Percolation {
 		if (!isOpen(row, col)) return false;
 		int parent = id.find(xyTo1D(row, col));
 		for (int i = 0; i < size; i++) {
-			if (virtualTop[i] == parent) return true;
+			if ((virtualTop[i] != null) && (virtualTop[i] == parent)) return true;
 		}
 		return false;
 	}

@@ -52,11 +52,12 @@ public class Percolation {
 				structHasChanged = true;
 			}
 		} catch(IndexOutOfBoundsException e) { /* no neighbor element */ }
+		
 		if (structHasChanged)
-		for (int i = 0; i < virtualTop.length; i++) {
-			if (siteStatus[i]) virtualTop[i] = id.find(i);
-			if (siteStatus[(size - 1) * size + i]) virtualBot[i] = id.find((size - 1) * size + i);
-		}
+			for (int i = 0; i < virtualTop.length; i++) {
+				if (siteStatus[i]) virtualTop[i] = id.find(i);
+				if (siteStatus[(size - 1) * size + i]) virtualBot[i] = id.find((size - 1) * size + i);
+			}
 		
 	}
 	

@@ -9,7 +9,7 @@ public class PercolationStats {
 	
 	public PercolationStats(int n, int trials) {
 		// perform trials independent experiments on an n-by-n grid
-		if ((n <= 0)||(trials <= 0)) throw new java.lang.IllegalArgumentException();
+		if ((n <= 0) || (trials <= 0)) throw new java.lang.IllegalArgumentException();
 		double[]openSitesArray = new double[trials];
 		
 		for (int i = 0; i < trials; i++) {

@@ -22,43 +22,68 @@ public class Percolation {
 		// open site (row, col) if it is not open already
 		if (isOpen(row, col)) return;
 		siteStatus[xyTo1D(row, col)] = true;
-		if (row==1) virtualTop[xyTo1D(row, col)] = xyTo1D(row, col);
-		if (row==size) virtualBot[xyTo1D(row, col) % size] = xyTo1D(row, col);
-		boolean structHasChanged = false;
+		if (row == 1) virtualTop[xyTo1D(row, col)] = xyTo1D(row, col);
+		if (row == size) virtualBot[xyTo1D(row, col) % size] = xyTo1D(row, col);
 		try {										// upper neighbor
 			if (isOpen(row - 1, col)) {
- 				id.union(xyTo1D(row, col), xyTo1D(row - 1, col));
- 				structHasChanged = true;
+				int oldRoot1 = id.find(xyTo1D(row, col));
+				int oldRoot2 = id.find(xyTo1D(row - 1, col));
+				id.union(xyTo1D(row, col), xyTo1D(row - 1, col));
+				int theirNewRoot = id.find(xyTo1D(row, col));
+				for (int i = 0; i < virtualTop.length; i++) {
+					if ((virtualTop[i] != null) 
+							&& ((virtualTop[i] == oldRoot1) || (virtualTop[i] == oldRoot2))) virtualTop[i] = theirNewRoot;
+					if ((virtualBot[i] != null) 
+							&& ((virtualBot[i] == oldRoot1) || (virtualBot[i] == oldRoot2))) virtualBot[i] = theirNewRoot;
+				}
 			}
 		} catch(IndexOutOfBoundsException e) { /* no neighbor element */ }
 		
 		try {										// lower neighbor
 			if (isOpen(row + 1, col)) {
+				int oldRoot1 = id.find(xyTo1D(row, col));
+				int oldRoot2 = id.find(xyTo1D(row + 1, col));
 				id.union(xyTo1D(row, col), xyTo1D(row + 1, col));
-				structHasChanged = true;
+				int theirNewRoot = id.find(xyTo1D(row, col));
+				for (int i = 0; i < virtualTop.length; i++) {
+					if ((virtualTop[i] != null) 
+							&& (virtualTop[i] == oldRoot1) | (virtualTop[i] == oldRoot2)) virtualTop[i] = theirNewRoot;
+					if ((virtualBot[i] != null) 
+							&& (virtualBot[i] == oldRoot1) | (virtualBot[i] == oldRoot2)) virtualBot[i] = theirNewRoot;
+				}
 			}
 		} catch(IndexOutOfBoundsException e) { /* no neighbor element */ }
 		
 		try {										// left neighbor
 			if (isOpen(row, col - 1)) {
+				int oldRoot1 = id.find(xyTo1D(row, col));
+				int oldRoot2 = id.find(xyTo1D(row, col - 1));
 				id.union(xyTo1D(row, col), xyTo1D(row, col - 1));
-				structHasChanged = true;
+				int theirNewRoot = id.find(xyTo1D(row, col));
+				for (int i = 0; i < virtualTop.length; i++) {
+					if ((virtualTop[i] != null) 
+							&& ((virtualTop[i] == oldRoot1) || (virtualTop[i] == oldRoot2))) virtualTop[i] = theirNewRoot;
+					if ((virtualBot[i] != null) 
+							&& ((virtualBot[i] == oldRoot1) || (virtualBot[i] == oldRoot2))) virtualBot[i] = theirNewRoot; 
+				}
 			}
 		} catch(IndexOutOfBoundsException e) { /* no neighbor element */ }
 		
 		try {										// right neighbor
 			if (isOpen(row, col + 1)) {
+				int oldRoot1 = id.find(xyTo1D(row, col));
+				int oldRoot2 = id.find(xyTo1D(row, col + 1));
 				id.union(xyTo1D(row, col), xyTo1D(row, col + 1));
-				structHasChanged = true;
+				int theirNewRoot = id.find(xyTo1D(row, col));
+				for (int i = 0; i < virtualTop.length; i++) {
+					if ((virtualTop[i] != null) 
+							&& ((virtualTop[i] == oldRoot1) || (virtualTop[i] == oldRoot2))) virtualTop[i] = theirNewRoot;
+					if ((virtualBot[i] != null) 
+							&& ((virtualBot[i] == oldRoot1) || (virtualBot[i] == oldRoot2))) virtualBot[i] = theirNewRoot;
+				}
 			}
 		} catch(IndexOutOfBoundsException e) { /* no neighbor element */ }
-		
-		if (structHasChanged)
-			for (int i = 0; i < virtualTop.length; i++) {
-				if (siteStatus[i]) virtualTop[i] = id.find(i);
-				if (siteStatus[(size - 1) * size + i]) virtualBot[i] = id.find((size - 1) * size + i);
-			}
-		
+				
 	}
 	
 	public boolean isOpen(int row, int col) {

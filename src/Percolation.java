@@ -3,18 +3,18 @@ import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 public class Percolation {
 	
 	private WeightedQuickUnionUF id;
+	private WeightedQuickUnionUF idNoWashback;
 	private int size;
 	private boolean[]siteStatus;
-	private Integer[]virtualTop;
-	private Integer[]virtualBot;
 	
 	public Percolation(int n) {
 		if (n <= 0) throw new java.lang.IllegalArgumentException();
-		id = new WeightedQuickUnionUF(n * n);
-		siteStatus = new boolean[n * n];
+		id = new WeightedQuickUnionUF(n * n + n * 2);
+		idNoWashback = new WeightedQuickUnionUF(n * n + n * 2);
+		siteStatus = new boolean[n * n + n * 2];
 		size = n;
-		virtualTop = new Integer[size];
-		virtualBot = new Integer[size];
+		siteStatus[0] = true;						//virtual top
+		siteStatus[siteStatus.length - 1] = true;	//virtual bottom
 	}
 	
 	
@@ -22,65 +22,46 @@ public class Percolation {
 		// open site (row, col) if it is not open already
 		if (isOpen(row, col)) return;
 		siteStatus[xyTo1D(row, col)] = true;
-		if (row == 1) virtualTop[xyTo1D(row, col)] = xyTo1D(row, col);
-		if (row == size) virtualBot[xyTo1D(row, col) % size] = xyTo1D(row, col);
+		if (row == 1) {
+			id.union(0, xyTo1D(row, col));
+			idNoWashback.union(0, xyTo1D(row, col));
+		}
+		if (row == size) {
+			id.union(siteStatus.length - 1, xyTo1D(row, col));
+		}
 		try {										// upper neighbor
 			if (isOpen(row - 1, col)) {
-				int oldRoot1 = id.find(xyTo1D(row, col));
-				int oldRoot2 = id.find(xyTo1D(row - 1, col));
+				
 				id.union(xyTo1D(row, col), xyTo1D(row - 1, col));
-				int theirNewRoot = id.find(xyTo1D(row, col));
-				for (int i = 0; i < virtualTop.length; i++) {
-					if ((virtualTop[i] != null) 
-							&& ((virtualTop[i] == oldRoot1) || (virtualTop[i] == oldRoot2))) virtualTop[i] = theirNewRoot;
-					if ((virtualBot[i] != null) 
-							&& ((virtualBot[i] == oldRoot1) || (virtualBot[i] == oldRoot2))) virtualBot[i] = theirNewRoot;
-				}
+				idNoWashback.union(xyTo1D(row, col), xyTo1D(row - 1, col));
+				
 			}
 		} catch(IndexOutOfBoundsException e) { /* no neighbor element */ }
 		
 		try {										// lower neighbor
 			if (isOpen(row + 1, col)) {
-				int oldRoot1 = id.find(xyTo1D(row, col));
-				int oldRoot2 = id.find(xyTo1D(row + 1, col));
+				
 				id.union(xyTo1D(row, col), xyTo1D(row + 1, col));
-				int theirNewRoot = id.find(xyTo1D(row, col));
-				for (int i = 0; i < virtualTop.length; i++) {
-					if ((virtualTop[i] != null) 
-							&& (virtualTop[i] == oldRoot1) | (virtualTop[i] == oldRoot2)) virtualTop[i] = theirNewRoot;
-					if ((virtualBot[i] != null) 
-							&& (virtualBot[i] == oldRoot1) | (virtualBot[i] == oldRoot2)) virtualBot[i] = theirNewRoot;
-				}
+				idNoWashback.union(xyTo1D(row, col), xyTo1D(row + 1, col));
+				
 			}
 		} catch(IndexOutOfBoundsException e) { /* no neighbor element */ }
 		
 		try {										// left neighbor
 			if (isOpen(row, col - 1)) {
-				int oldRoot1 = id.find(xyTo1D(row, col));
-				int oldRoot2 = id.find(xyTo1D(row, col - 1));
+				
 				id.union(xyTo1D(row, col), xyTo1D(row, col - 1));
-				int theirNewRoot = id.find(xyTo1D(row, col));
-				for (int i = 0; i < virtualTop.length; i++) {
-					if ((virtualTop[i] != null) 
-							&& ((virtualTop[i] == oldRoot1) || (virtualTop[i] == oldRoot2))) virtualTop[i] = theirNewRoot;
-					if ((virtualBot[i] != null) 
-							&& ((virtualBot[i] == oldRoot1) || (virtualBot[i] == oldRoot2))) virtualBot[i] = theirNewRoot; 
-				}
+				idNoWashback.union(xyTo1D(row, col), xyTo1D(row, col - 1));
+				
 			}
 		} catch(IndexOutOfBoundsException e) { /* no neighbor element */ }
 		
 		try {										// right neighbor
 			if (isOpen(row, col + 1)) {
-				int oldRoot1 = id.find(xyTo1D(row, col));
-				int oldRoot2 = id.find(xyTo1D(row, col + 1));
+				
 				id.union(xyTo1D(row, col), xyTo1D(row, col + 1));
-				int theirNewRoot = id.find(xyTo1D(row, col));
-				for (int i = 0; i < virtualTop.length; i++) {
-					if ((virtualTop[i] != null) 
-							&& ((virtualTop[i] == oldRoot1) || (virtualTop[i] == oldRoot2))) virtualTop[i] = theirNewRoot;
-					if ((virtualBot[i] != null) 
-							&& ((virtualBot[i] == oldRoot1) || (virtualBot[i] == oldRoot2))) virtualBot[i] = theirNewRoot;
-				}
+				idNoWashback.union(xyTo1D(row, col), xyTo1D(row, col + 1));
+				
 			}
 		} catch(IndexOutOfBoundsException e) { /* no neighbor element */ }
 				
@@ -95,11 +76,7 @@ public class Percolation {
 	public boolean isFull(int row, int col) {
 		if ((row < 1) || (col < 1) || (row > size) || (col > size)) throw new java.lang.IndexOutOfBoundsException();
 		if (!isOpen(row, col)) return false;
-		int parent = id.find(xyTo1D(row, col));
-		for (int i = 0; i < size; i++) {
-			if ((virtualTop[i] != null) && (virtualTop[i] == parent)) return true;
-		}
-		return false;
+		return idNoWashback.connected(0, xyTo1D(row, col));
 	}
 	
 	
@@ -108,23 +85,17 @@ public class Percolation {
 		for (int i = 0; i < siteStatus.length; i++) {
 			if (siteStatus[i]) number++;
 		}
-		return number;
+		return number - 2;
 	}
 	
 	public boolean percolates() { 
 		// does the system percolate?
-		for (int i = 0; i < size; i++) {
-			for (int j = 0; j < size; j++) {
-				if ((virtualTop[i] != null) && (virtualTop[i].equals(virtualBot[j]))) return true;
-				
-			}
-		}
-		return false;
+		return id.connected(0, siteStatus.length - 1);
 	}
 	
 	
 	
 	private int xyTo1D(int row, int col) {
-		return (row - 1) * size + col - 1;
+		return row * size + col - 1;
 	}
 }

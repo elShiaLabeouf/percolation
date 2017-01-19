@@ -21,7 +21,7 @@ public class Percolation {
 	public void open(int row, int col) {
 		// open site (row, col) if it is not open already
 		if (isOpen(row, col)) return;
-		siteStatus[xyTo1D(row, col)] = true;
+		siteStatus[xyTo1D(row, col)] = true; // xyTo1D(row, col) repeats 12 times -> you must introduce a variable to not repeat same code
 		if (row == 1) {
 			id.union(0, xyTo1D(row, col));
 			idNoWashback.union(0, xyTo1D(row, col));
@@ -29,6 +29,10 @@ public class Percolation {
 		if (row == size) {
 			id.union(siteStatus.length - 1, xyTo1D(row, col));
 		}
+
+		// from the book. Item 57: Use exceptions only for exceptional conditions
+		// when is the exception thrown? when there is no neighbor element (1 row/column).
+		// so check it first and then decide whether you need to check whether the neighbor isOpen
 		try {										// upper neighbor
 			if (isOpen(row - 1, col)) {
 				
@@ -78,9 +82,13 @@ public class Percolation {
 		if (!isOpen(row, col)) return false;
 		return idNoWashback.connected(0, xyTo1D(row, col));
 	}
-	
-	
+
+	/**
+	 * sites open in one and only place, why do you need to calculate number of open sites each time when you can introduce
+	 * a field: private int numberOfOpenSites; to keep this number and increase it each time you open a site.
+	 */
 	public int numberOfOpenSites() {
+		//this function has time complexity O(n^2), because it needs to check every siteStatus value - not good
 		int number = 0;
 		for (int i = 0; i < siteStatus.length; i++) {
 			if (siteStatus[i]) number++;
